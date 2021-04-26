@@ -13,8 +13,11 @@ public class Deck : MonoBehaviour
     public Text probMessage;
 
     public int[] values = new int[52];
-    int cardIndex = 0;    
-       
+    int cardIndex = 0;
+
+    public int[] shuffleValues;
+    public Sprite[] shuffleFaces;
+
     private void Awake()
     {    
         InitCardValues();        
@@ -51,7 +54,34 @@ public class Deck : MonoBehaviour
          * Barajar las cartas aleatoriamente.
          * El método Random.Range(0,n), devuelve un valor entre 0 y n-1
          * Si lo necesitas, puedes definir nuevos arrays.
-         */       
+         */
+        int r = 0;
+        bool contiene = false;
+
+        for(int i = 0; i < faces.Length; i++)
+        {
+            contiene = false;
+            r = Random.Range(0, 52);
+            foreach(Sprite s in shuffleFaces)
+            {
+                if (s.Equals(faces[r]))
+                {
+                    contiene = true;
+                }
+            }
+            if (!contiene)
+            {
+                shuffleValues[i] = values[r];
+                shuffleFaces[i] = faces[r];
+            }
+            else
+            {
+                i--;
+            }
+
+        }
+        values = shuffleValues;
+        faces = shuffleFaces;
     }
 
     void StartGame()
