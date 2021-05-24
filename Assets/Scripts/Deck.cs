@@ -93,6 +93,21 @@ public class Deck : MonoBehaviour
             /*TODO:
              * Si alguno de los dos obtiene Blackjack, termina el juego y mostramos mensaje
              */
+            CardHand jugador = player.GetComponent<CardHand>();
+            CardHand crupier = dealer.GetComponent<CardHand>();
+
+            if (jugador.points == 21)
+            {
+                hitButton.interactable = false;
+                stickButton.interactable = false;
+                finalMessage.text = "HAS GANADO!!";
+            }
+            if (crupier.points == 21)
+            {
+                hitButton.interactable = false;
+                stickButton.interactable = false;
+                finalMessage.text = "HAS PERDIDO";
+            }
         }
     }
 
@@ -136,7 +151,14 @@ public class Deck : MonoBehaviour
 
         /*TODO:
          * Comprobamos si el jugador ya ha perdido y mostramos mensaje
-         */      
+         */
+        CardHand jugador = player.GetComponent<CardHand>();
+        if (jugador.points > 21)
+        {
+            hitButton.interactable = false;
+            stickButton.interactable = false;
+            finalMessage.text = "HAS PERDIDO";
+        }
 
     }
 
@@ -150,8 +172,32 @@ public class Deck : MonoBehaviour
          * Repartimos cartas al dealer si tiene 16 puntos o menos
          * El dealer se planta al obtener 17 puntos o más
          * Mostramos el mensaje del que ha ganado
-         */                
-         
+         */
+        CardHand jugador = player.GetComponent<CardHand>();
+        CardHand crupier = dealer.GetComponent<CardHand>();
+        while (crupier.points <= 16)
+        {
+            PushDealer();
+        }
+        if (crupier.points > 21 || jugador.points > crupier.points)
+        {
+            hitButton.interactable = false;
+            stickButton.interactable = false;
+            finalMessage.text = "HAS GANADO!!";
+        }else if(jugador.points == crupier.points)
+        {
+            hitButton.interactable = false;
+            stickButton.interactable = false;
+            finalMessage.text = "EMPATE";
+        }else if(jugador.points < crupier.points)
+        {
+            hitButton.interactable = false;
+            stickButton.interactable = false;
+            finalMessage.text = "HAS PERDIDO";
+        }
+        
+
+
     }
 
     public void PlayAgain()
