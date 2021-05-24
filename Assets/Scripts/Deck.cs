@@ -10,17 +10,17 @@ public class Deck : MonoBehaviour
     public Button stickButton;
     public Button playAgainButton;
     public Text finalMessage;
-    public Text probMessage;
+    public Text probMessage1;
+    public Text probMessage2;
+    public Text probMessage3;
 
     public int[] values = new int[52];
     int cardIndex = 0;
 
-    public int[] shuffleValues;
-    public Sprite[] shuffleFaces;
-
+   
     private void Awake()
     {    
-        InitCardValues();        
+        InitCardValues();
 
     }
 
@@ -32,56 +32,46 @@ public class Deck : MonoBehaviour
 
     private void InitCardValues()
     {
-        /*TODO:
-         * Asignar un valor a cada una de las 52 cartas del atributo "values".
-         * En principio, la posición de cada valor se deberá corresponder con la posición de faces. 
-         * Por ejemplo, si en faces[1] hay un 2 de corazones, en values[1] debería haber un 2.
-         */
+        
         int aux = 1;
-         for(int i = 0; i < 52; i++)
-         {
-            if(aux < 10) values[i] = aux;
-            if(aux >= 10) values[i] = 10;
+         for (int i = 0; i < values.Length; i++)
+        {
+            if (aux > 13) aux = 1;
+            if (aux > 10)
+            {
+                values[i] = 10;         
+            }
+            else
+            {
+                values[i] = aux;              
+            }
+            if (aux == 1) values[i] = 11;
             aux++;
-            if (aux == 14) aux = 1;
-
         }
+         
     }
 
     private void ShuffleCards()
     {
-        /*TODO:
-         * Barajar las cartas aleatoriamente.
-         * El método Random.Range(0,n), devuelve un valor entre 0 y n-1
-         * Si lo necesitas, puedes definir nuevos arrays.
-         */
-        int r = 0;
-        bool contiene = false;
+        int[] valuesAux = new int[52];
+        Sprite[] facesAux = new Sprite[52];
+        int aux = 0;
 
-        for(int i = 0; i < faces.Length; i++)
+        for (int i = 0; i < 52; i++)
         {
-            contiene = false;
-            r = Random.Range(0, 52);
-            foreach(Sprite s in shuffleFaces)
+            int valor = 0;
+            while (valor == 0)
             {
-                if (s.Equals(faces[r]))
-                {
-                    contiene = true;
-                }
+                aux = Random.Range(0, 52);
+                valor = values[aux];
             }
-            if (!contiene)
-            {
-                shuffleValues[i] = values[r];
-                shuffleFaces[i] = faces[r];
-            }
-            else
-            {
-                i--;
-            }
-
+            values[aux] = 0;
+            valuesAux[i] = valor;
+            facesAux[i] = faces[aux];
         }
-        values = shuffleValues;
-        faces = shuffleFaces;
+
+        values = valuesAux;
+        faces = facesAux;
     }
 
     void StartGame()
@@ -90,51 +80,106 @@ public class Deck : MonoBehaviour
         {
             PushPlayer();
             PushDealer();
-            /*TODO:
-             * Si alguno de los dos obtiene Blackjack, termina el juego y mostramos mensaje
-             */
-            CardHand jugador = player.GetComponent<CardHand>();
-            CardHand crupier = dealer.GetComponent<CardHand>();
 
-            if (jugador.points == 21)
+            CardHand jugador = player.GetComponent<CardHand>();
+            CardHand banca = dealer.GetComponent<CardHand>();
+            if (jugador.points.Equals(21))
             {
                 hitButton.interactable = false;
                 stickButton.interactable = false;
                 finalMessage.text = "HAS GANADO!!";
+               
             }
-            if (crupier.points == 21)
+            
+            if (banca.points.Equals(21))
             {
                 hitButton.interactable = false;
                 stickButton.interactable = false;
-                finalMessage.text = "HAS PERDIDO";
+                finalMessage.text = "HAS PERDIDO";            
             }
         }
     }
 
     private void CalculateProbabilities()
     {
-        /*TODO:
-         * Calcular las probabilidades de:
-         * - Teniendo la carta oculta, probabilidad de que el dealer tenga más puntuación que el jugador
-         * - Probabilidad de que el jugador obtenga entre un 17 y un 21 si pide una carta
-         * - Probabilidad de que el jugador obtenga más de 21 si pide una carta          
-         */
+        CardHand jugador = player.GetComponent<CardHand>();
+        CardHand banca = dealer.GetComponent<CardHand>();
+        float fav1 = 0;
+        float fav2 = 0;
+        float fav3 = 0;
+        int count = 3;
+        
+
+        if (banca.cards.Count.Equals(2)) {
+            foreach (int value in values)
+            {
+                if (banca.cards[1].GetComponent<CardModel>().value + value > jugador.points)
+                {
+                    if (banca.cards[0].GetComponent<CardModel>().value.Equals(value))
+                    {
+                        count--;
+                    }
+                    if(count != 0)
+                    {
+                        fav1++;
+                    }
+                    
+                }
+            }
+        }
+        probMessage1.text = "Probabilidad de que el dealer tenga mas puntos = " + fav1 / (52-cardIndex-1);
+
+
+        if (banca.cards.Count.Equals(2))
+        {
+            foreach (int value in values)
+            {
+                if (jugador.points + value >= 17 && jugador.points + value <= 21)
+                {
+                    if (banca.cards[0].GetComponent<CardModel>().value.Equals(value))
+                    {
+                        count--;
+                    }
+                    if (count != 0)
+                    {
+                        fav2++;
+                    }
+                }
+            }
+        }
+        probMessage2.text = "Probabilidad de obtener entre 17 y 21 = " + fav2 / (52 - cardIndex);
+  
+
+        if (banca.cards.Count.Equals(2))
+        {
+            foreach (int value in values)
+            {
+                if (jugador.points + value > 21)
+                {
+                    if (banca.cards[0].GetComponent<CardModel>().value.Equals(value))
+                    {
+                        count--;
+                    }
+                    if (count != 0)
+                    {
+                        fav3++;
+                    }
+                }
+            }
+        }   
+        probMessage3.text = "Probabilidad de obtener mas de 21 = " + fav3 / (52 - cardIndex);
+
     }
 
     void PushDealer()
     {
-        /*TODO:
-         * Dependiendo de cómo se implemente ShuffleCards, es posible que haya que cambiar el índice.
-         */
         dealer.GetComponent<CardHand>().Push(faces[cardIndex],values[cardIndex]);
-        cardIndex++;        
+        cardIndex++;
+        CalculateProbabilities();
     }
 
     void PushPlayer()
     {
-        /*TODO:
-         * Dependiendo de cómo se implemente ShuffleCards, es posible que haya que cambiar el índice.
-         */
         player.GetComponent<CardHand>().Push(faces[cardIndex], values[cardIndex]/*,cardCopy*/);
         cardIndex++;
         CalculateProbabilities();
@@ -142,17 +187,16 @@ public class Deck : MonoBehaviour
 
     public void Hit()
     {
-        /*TODO: 
-         * Si estamos en la mano inicial, debemos voltear la primera carta del dealer.
-         */
-        
-        //Repartimos carta al jugador
-        PushPlayer();
-
-        /*TODO:
-         * Comprobamos si el jugador ya ha perdido y mostramos mensaje
-         */
         CardHand jugador = player.GetComponent<CardHand>();
+        CardHand banca = dealer.GetComponent<CardHand>();
+
+        if (cardIndex.Equals(4))
+        {
+            banca.cards[0].GetComponent<SpriteRenderer>().sprite = banca.cards[0].GetComponent<CardModel>().front;
+        }
+
+        PushPlayer();
+        
         if (jugador.points > 21)
         {
             hitButton.interactable = false;
@@ -164,39 +208,30 @@ public class Deck : MonoBehaviour
 
     public void Stand()
     {
-        /*TODO: 
-         * Si estamos en la mano inicial, debemos voltear la primera carta del dealer.
-         */
-
-        /*TODO:
-         * Repartimos cartas al dealer si tiene 16 puntos o menos
-         * El dealer se planta al obtener 17 puntos o más
-         * Mostramos el mensaje del que ha ganado
-         */
         CardHand jugador = player.GetComponent<CardHand>();
-        CardHand crupier = dealer.GetComponent<CardHand>();
-        while (crupier.points <= 16)
+        CardHand banca = dealer.GetComponent<CardHand>();
+
+        if (cardIndex.Equals(4))
+        {
+            banca.cards[0].GetComponent<SpriteRenderer>().sprite = banca.cards[0].GetComponent<CardModel>().front;
+        }
+
+         while (banca.points <= 16)
         {
             PushDealer();
         }
-        if (crupier.points > 21 || jugador.points > crupier.points)
+        if (jugador.points > banca.points || banca.points > 21)
         {
             hitButton.interactable = false;
             stickButton.interactable = false;
             finalMessage.text = "HAS GANADO!!";
-        }else if(jugador.points == crupier.points)
-        {
-            hitButton.interactable = false;
-            stickButton.interactable = false;
-            finalMessage.text = "EMPATE";
-        }else if(jugador.points < crupier.points)
-        {
+        }
+        else {
             hitButton.interactable = false;
             stickButton.interactable = false;
             finalMessage.text = "HAS PERDIDO";
-        }
-        
 
+        }
 
     }
 
@@ -206,10 +241,11 @@ public class Deck : MonoBehaviour
         stickButton.interactable = true;
         finalMessage.text = "";
         player.GetComponent<CardHand>().Clear();
-        dealer.GetComponent<CardHand>().Clear();          
+        dealer.GetComponent<CardHand>().Clear();
         cardIndex = 0;
         ShuffleCards();
         StartGame();
+        
     }
     
 }
